@@ -1,8 +1,10 @@
-package com.fmi.spo.chatserver;
+package com.fmi.spo.messages;
 
 import java.io.Serializable;
 
 public class ClientMessageWrapper implements Serializable {
+	private static final long serialVersionUID = 902685721200518336L;
+
 	public enum Command {
 		USER("user"), SEND_TO("send_to"), SEND_ALL("send_all"), LIST("list"), SEND_FILE_TO("send_file_to"), BYE("bye");
 
@@ -51,5 +53,10 @@ public class ClientMessageWrapper implements Serializable {
 
 	public String getCommand() {
 		return this.command.toString();
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s %s", this.command, this.message);
 	}
 }

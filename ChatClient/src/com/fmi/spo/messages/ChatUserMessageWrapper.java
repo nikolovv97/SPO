@@ -1,6 +1,8 @@
-package com.fmi.spo.chatserver;
+package com.fmi.spo.messages;
 
 public class ChatUserMessageWrapper extends ServerMessageWrapper {
+	private static final long serialVersionUID = -8813666367590828440L;
+
 	private String username;
 
 	public ChatUserMessageWrapper(String username, String message) {

@@ -1,6 +1,8 @@
-package com.fmi.spo.chatclient;
+package com.fmi.spo.messages;
 
 public class ServerResponseWrapper extends ServerMessageWrapper {
+
+	private static final long serialVersionUID = -188065013687422130L;
 
 	private int statusCode;
 

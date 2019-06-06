@@ -5,12 +5,17 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.fmi.spo.chatserver.ClientMessageWrapper.Command;
+import com.fmi.spo.messages.ChatUserMessageWrapper;
+import com.fmi.spo.messages.ClientMessageWrapper;
+import com.fmi.spo.messages.ServerMessageWrapper;
+import com.fmi.spo.messages.ServerResponseWrapper;
 
 public class ClientHandler implements Runnable {
+	private final static Logger log = Logger.getLogger(ClientHandler.class.getName());
+
 	private Socket socket;
 	private ChatServer server;
 	private ObjectInputStream clientInput;
@@ -18,12 +23,12 @@ public class ClientHandler implements Runnable {
 	private boolean isRegistered;
 	private String username;
 
-	public ClientHandler(Socket socket, ChatServer server, String username) throws IOException {
+	public ClientHandler(Socket socket, ChatServer server) throws IOException {
 		this.socket = socket;
 		this.server = server;
-		this.clientInput = (ObjectInputStream) this.socket.getInputStream();
-		this.writer = new PrintWriter((ObjectOutputStream) this.socket.getOutputStream());
-		this.username = username;
+		this.writer = new PrintWriter(new ObjectOutputStream(this.socket.getOutputStream()));
+		this.clientInput = new ObjectInputStream(this.socket.getInputStream());
+		this.username = "unregistered";
 		this.isRegistered = false;
 	}
 
@@ -40,6 +45,7 @@ public class ClientHandler implements Runnable {
 		while (true) {
 			try {
 				ClientMessageWrapper receivedMessage = (ClientMessageWrapper) this.clientInput.readObject();
+				log.info(receivedMessage.toString());
 				ServerResponseWrapper serverResponse = handleMessage(receivedMessage);
 				writeMessage(serverResponse);
 				if (serverResponse.getMessage().startsWith("Goodbye")) {

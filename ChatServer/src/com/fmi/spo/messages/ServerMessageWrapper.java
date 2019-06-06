@@ -1,8 +1,9 @@
-package com.fmi.spo.chatclient;
+package com.fmi.spo.messages;
 
 import java.io.Serializable;
 
 public abstract class ServerMessageWrapper implements Serializable {
+	private static final long serialVersionUID = -4142546586810067051L;
 
 	protected String message;
 

@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+import com.fmi.spo.messages.ClientMessageWrapper;
+
 public class ChatClient {
 	private final static Logger log = Logger.getLogger(ChatClient.class.getName());
 
@@ -16,6 +18,7 @@ public class ChatClient {
 	private String serverIp;
 	private int serverPort;
 	private String username;
+	private Thread serverListener;
 
 	public ChatClient(String serverIp, int serverPort, String username) {
 		this.serverIp = serverIp;
@@ -33,12 +36,13 @@ public class ChatClient {
 	public boolean connect() {
 		try {
 			Socket socket = new Socket(serverIp, serverPort);
-			sInput = new ObjectInputStream(socket.getInputStream());
-			sOutput = new ObjectOutputStream(socket.getOutputStream());
 
-			Thread t = new Thread(new ServerListener(sInput));
-			t.start();
-			
+			sOutput = new ObjectOutputStream(socket.getOutputStream());
+			sInput = new ObjectInputStream(socket.getInputStream());
+
+			serverListener = new Thread(new ServerListener(sInput));
+			serverListener.start();
+
 		} catch (Exception e) {
 			log.info("Error!Could not connect to server " + e);
 			return false;
@@ -50,7 +54,7 @@ public class ChatClient {
 	public void sendMessage(String command, String message) {
 		try {
 			ClientMessageWrapper wrappedMessage = new ClientMessageWrapper(command, message);
-
+			log.info(wrappedMessage.toString());
 			sOutput.writeObject(wrappedMessage);
 		} catch (Exception e) {
 			log.info("Could not send message to server! " + e);
@@ -63,17 +67,21 @@ public class ChatClient {
 		String serverAddress = "localhost";
 
 		Scanner scan = new Scanner(System.in);
-
-		String username = scan.nextLine();
+		log.info("Enter username:");
+		String username = scan.next();
 
 		ChatClient client = new ChatClient(serverAddress, portNumber, username);
 
 		if (!client.connect()) {
 			return;
 		}
+
+		log.info("Connected");
+
 		client.sendMessage("user", username);
 
 		while (true) {
+			log.info("enter new command");
 			String command = scan.next();
 			String message = scan.nextLine();
 
