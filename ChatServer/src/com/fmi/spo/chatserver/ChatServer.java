@@ -3,11 +3,9 @@ package com.fmi.spo.chatserver;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.fmi.spo.messages.ChatUserMessageWrapper;
 import com.fmi.spo.messages.ServerMessageWrapper;

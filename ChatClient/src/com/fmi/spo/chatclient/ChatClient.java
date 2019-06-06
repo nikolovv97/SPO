@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 import com.fmi.spo.messages.ClientMessageWrapper;
 
 public class ChatClient {
-	private ObjectInputStream sInput;
 	private ObjectOutputStream sOutput;
 	private Socket socket;
 
@@ -36,9 +35,8 @@ public class ChatClient {
 			Socket socket = new Socket(serverIp, serverPort);
 
 			sOutput = new ObjectOutputStream(socket.getOutputStream());
-			sInput = new ObjectInputStream(socket.getInputStream());
 
-			serverListener = new Thread(new ServerListener(sInput));
+			serverListener = new Thread(new ServerListener(socket));
 			serverListener.start();
 
 		} catch (Exception e) {
@@ -78,17 +76,22 @@ public class ChatClient {
 		client.sendMessage("user", null, username);
 
 		while (true) {
-			System.out.println("enter new command");
 			String command = scan.nextLine();
-			String message = null;
-			String to = null;
-			if (command.equals("send_to")) {
-				to = scan.nextLine();
+			String[] commandArgs = command.split(" ", 2);
+			if (commandArgs.length == 1) {
+				client.sendMessage(commandArgs[0], null, null);
+				if (commandArgs[0].equals("bye")) {
+					break;
+				}
+			} else if (commandArgs.length == 2 && commandArgs[0].equals("send_all")) {
+				client.sendMessage(commandArgs[0], null, commandArgs[1]);
+			} else if (commandArgs.length == 2 && commandArgs[0].equals("user")) {
+				client.sendMessage(commandArgs[0], commandArgs[1], null);
+			} else if (commandArgs.length == 3 && commandArgs[0].equals("send_to")) {
+				client.sendMessage(commandArgs[0], commandArgs[1], commandArgs[2]);
+			} else {
+				System.out.println("Invalid input command");
 			}
-			if (!command.equals("bye") && !command.equals("list")) {
-				message = scan.nextLine();
-			}
-			client.sendMessage(command, to, message);
 		}
 	}
 }

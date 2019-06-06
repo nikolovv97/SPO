@@ -17,14 +17,14 @@ public class ClientHandler implements Runnable {
 	private Socket socket;
 	private ChatServer server;
 	private ObjectInputStream clientInput;
-	private PrintWriter writer;
+	private ObjectOutputStream clientOutput;
 	private boolean isRegistered;
 	private String username;
 
 	public ClientHandler(Socket socket, ChatServer server) throws IOException {
 		this.socket = socket;
 		this.server = server;
-		this.writer = new PrintWriter(new ObjectOutputStream(this.socket.getOutputStream()));
+		this.clientOutput = new ObjectOutputStream(this.socket.getOutputStream());
 		this.clientInput = new ObjectInputStream(this.socket.getInputStream());
 		this.username = "unregistered";
 		this.isRegistered = false;
@@ -50,14 +50,17 @@ public class ClientHandler implements Runnable {
 					break;
 				}
 			} catch (Exception e) {
-				writeMessage(new ServerResponseWrapper("Server could not handle the command", 500));
 				e.printStackTrace();
 			}
 		}
 	}
 
 	public synchronized void writeMessage(ServerMessageWrapper message) {
-		this.writer.print(message);
+		try {
+			this.clientOutput.writeObject(message);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private ServerResponseWrapper handleMessage(ClientMessageWrapper receivedMessage) {
@@ -80,29 +83,38 @@ public class ClientHandler implements Runnable {
 	}
 
 	private ServerResponseWrapper registerUser(String username) {
+		if (username == null || username.isEmpty()) {
+			return new ServerResponseWrapper("Error! Username is empty", 400);
+		}
 		if (this.server.registerUser(username, this)) {
 			this.isRegistered = true;
 			this.username = username;
 
-			return new ServerResponseWrapper("User {} successfully registered" + username, 200);
+			return new ServerResponseWrapper("User " + username + " successfully registered", 200);
 		} else {
-			return new ServerResponseWrapper("Error! Username {} already taken!" + username, 100);
+			return new ServerResponseWrapper("Error! Username " + username + " already taken!", 100);
 		}
 	}
 
 	private ServerResponseWrapper sendMessageToUser(String toUser, String message) {
 		if (!this.isRegistered) {
 			return new ServerResponseWrapper("Error!Unregistered clients cant send messages", 403);
+		} else if (username == null || username.isEmpty()) {
+			return new ServerResponseWrapper("Error! Username is empty", 400);
+		} else if (message == null || message.isEmpty()) {
+			return new ServerResponseWrapper("Error! Message is empty", 400);
 		}
 
 		return this.server.sendMessageToUser(toUser, new ChatUserMessageWrapper(this.username, message))
-				? new ServerResponseWrapper("Ok! Message to {} sent successfully" + username, 200)
-				: new ServerResponseWrapper("Error! User {} not found" + username, 404);
+				? new ServerResponseWrapper("Ok! Message to " + toUser + " sent successfully", 200)
+				: new ServerResponseWrapper("Error! User " + toUser + " not found", 404);
 	}
 
 	private ServerResponseWrapper sendToAll(String message) {
 		if (!this.isRegistered) {
 			return new ServerResponseWrapper("Error!Unregistered clients cant send messages", 403);
+		} else if (message == null || message.isEmpty()) {
+			return new ServerResponseWrapper("Error! Message is empty", 400);
 		}
 
 		return this.server.sendAll(new ChatUserMessageWrapper(this.username, message))
