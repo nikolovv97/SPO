@@ -9,8 +9,6 @@ import java.util.logging.Logger;
 import com.fmi.spo.messages.ClientMessageWrapper;
 
 public class ChatClient {
-	private final static Logger log = Logger.getLogger(ChatClient.class.getName());
-
 	private ObjectInputStream sInput;
 	private ObjectOutputStream sOutput;
 	private Socket socket;
@@ -44,20 +42,19 @@ public class ChatClient {
 			serverListener.start();
 
 		} catch (Exception e) {
-			log.info("Error!Could not connect to server " + e);
+			System.out.println("Error!Could not connect to server " + e);
 			return false;
 		}
 
 		return true;
 	}
 
-	public void sendMessage(String command, String message) {
+	public void sendMessage(String command, String username, String message) {
 		try {
-			ClientMessageWrapper wrappedMessage = new ClientMessageWrapper(command, message);
-			log.info(wrappedMessage.toString());
+			ClientMessageWrapper wrappedMessage = new ClientMessageWrapper(command, username, message);
 			sOutput.writeObject(wrappedMessage);
 		} catch (Exception e) {
-			log.info("Could not send message to server! " + e);
+			System.out.println("Could not send message to server! " + e);
 		}
 
 	}
@@ -67,7 +64,7 @@ public class ChatClient {
 		String serverAddress = "localhost";
 
 		Scanner scan = new Scanner(System.in);
-		log.info("Enter username:");
+		System.out.println("Enter username:");
 		String username = scan.next();
 
 		ChatClient client = new ChatClient(serverAddress, portNumber, username);
@@ -76,16 +73,22 @@ public class ChatClient {
 			return;
 		}
 
-		log.info("Connected");
+		System.out.println("Connected");
 
-		client.sendMessage("user", username);
+		client.sendMessage("user", null, username);
 
 		while (true) {
-			log.info("enter new command");
-			String command = scan.next();
-			String message = scan.nextLine();
-
-			client.sendMessage(command, message);
+			System.out.println("enter new command");
+			String command = scan.nextLine();
+			String message = null;
+			String to = null;
+			if (command.equals("send_to")) {
+				to = scan.nextLine();
+			}
+			if (!command.equals("bye") && !command.equals("list")) {
+				message = scan.nextLine();
+			}
+			client.sendMessage(command, to, message);
 		}
 	}
 }

@@ -7,8 +7,6 @@ import com.fmi.spo.messages.ChatUserMessageWrapper;
 import com.fmi.spo.messages.ServerResponseWrapper;
 
 public class ServerListener implements Runnable {
-	private final static Logger log = Logger.getLogger(ServerListener.class.getName());
-
 	private ObjectInputStream inputStream;
 
 	public ServerListener(ObjectInputStream inputStream) {
@@ -17,8 +15,6 @@ public class ServerListener implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("Connected to the server");
-		log.info("Connected to the server");
 		while (true) {
 			try {
 				Object message = inputStream.readObject();
@@ -27,10 +23,10 @@ public class ServerListener implements Runnable {
 				} else {
 					message = (ChatUserMessageWrapper) message;
 				}
-				log.info(message.toString());
+				System.out.println(message.toString());
 
 			} catch (Exception e) {
-				log.info("Error receiving response from server! " + e);
+				System.out.println("Error receiving response from server! " + e);
 			}
 		}
 	}

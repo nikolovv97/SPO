@@ -22,8 +22,9 @@ public class ClientMessageWrapper implements Serializable {
 
 	private String message;
 	private Command command;
+	private String toUser;
 
-	public ClientMessageWrapper(String command, String message) throws Exception {
+	public ClientMessageWrapper(String command, String toUser, String message) throws Exception {
 		switch (command) {
 		case "user":
 			this.command = Command.USER;
@@ -42,9 +43,12 @@ public class ClientMessageWrapper implements Serializable {
 			break;
 		case "bye":
 			this.command = Command.BYE;
+			break;
 		default:
 			throw new Exception("Unknown command");
 		}
+		this.message = message;
+		this.toUser = toUser;
 	}
 
 	public String getMessage() {
@@ -55,8 +59,12 @@ public class ClientMessageWrapper implements Serializable {
 		return this.command.toString();
 	}
 
+	public String getToUser() {
+		return this.toUser;
+	}
+
 	@Override
 	public String toString() {
-		return String.format("%s %s", this.command, this.message);
+		return String.format("%s %s%s", this.command, this.toUser != null ? this.toUser + " " : "", this.message);
 	}
 }

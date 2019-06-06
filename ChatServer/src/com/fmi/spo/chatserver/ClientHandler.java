@@ -5,7 +5,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.fmi.spo.messages.ChatUserMessageWrapper;
@@ -14,7 +13,6 @@ import com.fmi.spo.messages.ServerMessageWrapper;
 import com.fmi.spo.messages.ServerResponseWrapper;
 
 public class ClientHandler implements Runnable {
-	private final static Logger log = Logger.getLogger(ClientHandler.class.getName());
 
 	private Socket socket;
 	private ChatServer server;
@@ -45,7 +43,6 @@ public class ClientHandler implements Runnable {
 		while (true) {
 			try {
 				ClientMessageWrapper receivedMessage = (ClientMessageWrapper) this.clientInput.readObject();
-				log.info(receivedMessage.toString());
 				ServerResponseWrapper serverResponse = handleMessage(receivedMessage);
 				writeMessage(serverResponse);
 				if (serverResponse.getMessage().startsWith("Goodbye")) {
@@ -68,7 +65,7 @@ public class ClientHandler implements Runnable {
 		case "user":
 			return registerUser(receivedMessage.getMessage());
 		case "send_to":
-			return sendMessageToUser(receivedMessage.getMessage());
+			return sendMessageToUser(receivedMessage.getToUser(), receivedMessage.getMessage());
 		case "send_all":
 			return sendToAll(receivedMessage.getMessage());
 		case "list":
@@ -93,11 +90,12 @@ public class ClientHandler implements Runnable {
 		}
 	}
 
-	private ServerResponseWrapper sendMessageToUser(String message) {
+	private ServerResponseWrapper sendMessageToUser(String toUser, String message) {
 		if (!this.isRegistered) {
 			return new ServerResponseWrapper("Error!Unregistered clients cant send messages", 403);
 		}
-		return this.server.sendMessageToUser(username, new ChatUserMessageWrapper(this.username, message))
+
+		return this.server.sendMessageToUser(toUser, new ChatUserMessageWrapper(this.username, message))
 				? new ServerResponseWrapper("Ok! Message to {} sent successfully" + username, 200)
 				: new ServerResponseWrapper("Error! User {} not found" + username, 404);
 	}

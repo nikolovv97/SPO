@@ -14,8 +14,6 @@ import com.fmi.spo.messages.ServerMessageWrapper;
 import com.fmi.spo.messages.ServerResponseWrapper;
 
 public class ChatServer {
-	private final static Logger log = Logger.getLogger(ChatServer.class.getName());
-
 	private static int counter = 0;
 
 	private int serverPort;
@@ -29,7 +27,7 @@ public class ChatServer {
 	}
 
 	public void start() {
-		log.info("Server started");
+		System.out.println("Server started");
 
 		while (true) {
 			try {
@@ -55,7 +53,7 @@ public class ChatServer {
 		}
 		users.put(username, user);
 
-		log.info("User " + username + " registered");
+		System.out.println("User " + username + " registered");
 		return true;
 	}
 
@@ -64,7 +62,7 @@ public class ChatServer {
 			return false;
 		}
 
-		log.info(message.toString());
+		System.out.println(message.toString());
 
 		this.users.get(username).writeMessage(message);
 		return true;
@@ -78,7 +76,7 @@ public class ChatServer {
 				}
 			}
 
-			log.info(message.toString());
+			System.out.println(message.toString());
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
