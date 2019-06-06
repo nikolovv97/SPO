@@ -1,8 +1,8 @@
-package com.fmi.spo.client;
+package com.fmi.spo.chatclient;
 
 import java.io.Serializable;
 
-public class MessageSendWrapper implements Serializable {
+public class ClientMessageWrapper implements Serializable {
 	public enum Command {
 		USER("user"), SEND_TO("send_to"), SEND_ALL("send_all"), LIST("list"), SEND_FILE_TO("send_file_to"), BYE("bye");
 
@@ -21,7 +21,7 @@ public class MessageSendWrapper implements Serializable {
 	private String message;
 	private Command command;
 
-	public MessageSendWrapper(String command, String message) throws Exception {
+	public ClientMessageWrapper(String command, String message) throws Exception {
 		switch (command) {
 		case "user":
 			this.command = Command.USER;

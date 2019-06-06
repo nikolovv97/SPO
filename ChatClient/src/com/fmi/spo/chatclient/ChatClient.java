@@ -1,4 +1,4 @@
-package com.fmi.spo.client;
+package com.fmi.spo.chatclient;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -6,8 +6,8 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-public class Client {
-	private final static Logger log = Logger.getLogger(Client.class.getName());
+public class ChatClient {
+	private final static Logger log = Logger.getLogger(ChatClient.class.getName());
 
 	private ObjectInputStream sInput;
 	private ObjectOutputStream sOutput;
@@ -17,13 +17,13 @@ public class Client {
 	private int serverPort;
 	private String username;
 
-	public Client(String serverIp, int serverPort, String username) {
+	public ChatClient(String serverIp, int serverPort, String username) {
 		this.serverIp = serverIp;
 		this.serverPort = serverPort;
 		this.username = username;
 	}
 
-	public Client() {
+	public ChatClient() {
 		// default ip and port
 		this.serverIp = "localhost";
 		this.serverPort = 8080;
@@ -36,7 +36,9 @@ public class Client {
 			sInput = new ObjectInputStream(socket.getInputStream());
 			sOutput = new ObjectOutputStream(socket.getOutputStream());
 
-			new Thread(new ServerListener(sInput)).start();
+			Thread t = new Thread(new ServerListener(sInput));
+			t.start();
+			
 		} catch (Exception e) {
 			log.info("Error!Could not connect to server " + e);
 			return false;
@@ -47,7 +49,7 @@ public class Client {
 
 	public void sendMessage(String command, String message) {
 		try {
-			MessageSendWrapper wrappedMessage = new MessageSendWrapper(command, message);
+			ClientMessageWrapper wrappedMessage = new ClientMessageWrapper(command, message);
 
 			sOutput.writeObject(wrappedMessage);
 		} catch (Exception e) {
@@ -64,7 +66,7 @@ public class Client {
 
 		String username = scan.nextLine();
 
-		Client client = new Client(serverAddress, portNumber, username);
+		ChatClient client = new ChatClient(serverAddress, portNumber, username);
 
 		if (!client.connect()) {
 			return;
