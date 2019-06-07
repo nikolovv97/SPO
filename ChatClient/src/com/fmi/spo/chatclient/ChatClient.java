@@ -3,6 +3,7 @@ package com.fmi.spo.chatclient;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Random;
 import java.util.Scanner;
 
 import com.fmi.spo.messages.ClientMessageWrapper;
@@ -56,15 +57,28 @@ public class ChatClient {
 		}
 	}
 
+	public void enterTestMode() throws Exception {
+		byte[] bytes = new byte[50];
+		while (true) {
+			Random random = new Random();
+			random.nextBytes(bytes);
+			String randomGeneratedMessage = new String(bytes);
+			sendMessage("send_all", null, randomGeneratedMessage);
+			Thread.sleep(100);
+		}
+	}
+
 	public static void main(String[] args) {
 		int serverPort = 8080;
 		String serverIP = "localhost";
-
-		for (int i = 0; i < args.length - 1; i++) {
+		boolean testMode = false;
+		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-serverIP")) {
 				serverIP = args[i + 1];
 			} else if (args[i].equals("-serverPort")) {
 				serverPort = Integer.parseInt(args[i + 1]);
+			} else if (args[i].equals("-testMode")) {
+				testMode = true;
 			}
 		}
 
@@ -78,6 +92,11 @@ public class ChatClient {
 		String username = scan.nextLine();
 		try {
 			client.sendMessage("user", username, null);
+
+			if (testMode) {
+				client.enterTestMode();
+				return;
+			}
 
 			while (true) {
 				String command = scan.nextLine();

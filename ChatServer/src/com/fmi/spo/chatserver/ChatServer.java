@@ -25,7 +25,7 @@ public class ChatServer {
 	}
 
 	public void start() {
-		System.out.println("Server started");
+		System.out.println("Server started on localhost:" + this.serverPort);
 		while (true) {
 			try {
 				Socket client = this.serverSocket.accept();
@@ -76,7 +76,7 @@ public class ChatServer {
 	public boolean sendAll(ChatUserMessageWrapper message) {
 		try {
 			for (ClientHandler user : this.users.values()) {
-				if (!user.getUsername().equals(message.getUsername())) {
+				if (user.isRegistered() && !user.getUsername().equals(message.getUsername())) {
 					user.writeMessage(message);
 				}
 			}
@@ -99,7 +99,8 @@ public class ChatServer {
 		ServerResponseWrapper userDisconnectedMessage = new ServerResponseWrapper("User " + username + " disconnected",
 				404);
 		for (ClientHandler user : this.users.values()) {
-			user.writeMessage(userDisconnectedMessage);
+			if (user.isRegistered())
+				user.writeMessage(userDisconnectedMessage);
 		}
 	}
 
