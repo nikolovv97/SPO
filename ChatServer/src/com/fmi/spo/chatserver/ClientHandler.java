@@ -61,7 +61,7 @@ public class ClientHandler extends Thread {
 		}
 	}
 
-	public synchronized void writeMessage(ServerMessageWrapper message) {
+	public void writeMessage(ServerMessageWrapper message) {
 		try {
 			this.clientOutput.writeObject(message);
 		} catch (Exception e) {
