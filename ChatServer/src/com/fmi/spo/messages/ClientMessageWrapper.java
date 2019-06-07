@@ -45,7 +45,7 @@ public class ClientMessageWrapper implements Serializable {
 			this.command = Command.BYE;
 			break;
 		default:
-			throw new Exception("Unknown command");
+			throw new Exception("Unknown command \"" + command + "\"");
 		}
 		this.message = message;
 		this.toUser = toUser;

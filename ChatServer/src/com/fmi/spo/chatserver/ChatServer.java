@@ -89,7 +89,7 @@ public class ChatServer {
 	public void disconnectUser(String username) {
 		this.users.remove(username);
 
-		ServerResponseWrapper userDisconnectedMessage = new ServerResponseWrapper("User" + username + "disconnected",
+		ServerResponseWrapper userDisconnectedMessage = new ServerResponseWrapper("User " + username + " disconnected",
 				404);
 		for (ClientHandler user : this.users.values()) {
 			user.writeMessage(userDisconnectedMessage);

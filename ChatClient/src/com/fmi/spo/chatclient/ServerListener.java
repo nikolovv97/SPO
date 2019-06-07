@@ -3,7 +3,6 @@ package com.fmi.spo.chatclient;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
-import java.util.logging.Logger;
 
 import com.fmi.spo.messages.ChatUserMessageWrapper;
 import com.fmi.spo.messages.ServerResponseWrapper;
@@ -27,6 +26,9 @@ public class ServerListener implements Runnable {
 				}
 				System.out.println(message.toString());
 
+			} catch (IOException e) {
+				System.out.println("Disconnected");
+				break;
 			} catch (Exception e) {
 				System.out.println("Error receiving response from server! " + e);
 			}

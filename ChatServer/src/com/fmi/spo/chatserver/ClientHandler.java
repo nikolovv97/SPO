@@ -1,5 +1,6 @@
 package com.fmi.spo.chatserver;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -50,7 +51,9 @@ public class ClientHandler implements Runnable {
 					break;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.out.println("User " + this.username + " disconnected");
+				this.server.disconnectUser(this.username);
+				break;
 			}
 		}
 	}
@@ -66,7 +69,7 @@ public class ClientHandler implements Runnable {
 	private ServerResponseWrapper handleMessage(ClientMessageWrapper receivedMessage) {
 		switch (receivedMessage.getCommand()) {
 		case "user":
-			return registerUser(receivedMessage.getMessage());
+			return registerUser(receivedMessage.getToUser());
 		case "send_to":
 			return sendMessageToUser(receivedMessage.getToUser(), receivedMessage.getMessage());
 		case "send_all":
@@ -85,8 +88,10 @@ public class ClientHandler implements Runnable {
 	private ServerResponseWrapper registerUser(String username) {
 		if (username == null || username.isEmpty()) {
 			return new ServerResponseWrapper("Error! Username is empty", 400);
-		}
-		if (this.server.registerUser(username, this)) {
+		} else if (this.isRegistered) {
+			return new ServerResponseWrapper(
+					"Error! You are already registered with username \"" + this.username + "\"", 400);
+		} else if (this.server.registerUser(username, this)) {
 			this.isRegistered = true;
 			this.username = username;
 
@@ -105,7 +110,7 @@ public class ClientHandler implements Runnable {
 			return new ServerResponseWrapper("Error! Message is empty", 400);
 		}
 
-		return this.server.sendMessageToUser(toUser, new ChatUserMessageWrapper(this.username, message))
+		return this.server.sendMessageToUser(toUser, new ChatUserMessageWrapper(this.username, message, true))
 				? new ServerResponseWrapper("Ok! Message to " + toUser + " sent successfully", 200)
 				: new ServerResponseWrapper("Error! User " + toUser + " not found", 404);
 	}
@@ -117,7 +122,7 @@ public class ClientHandler implements Runnable {
 			return new ServerResponseWrapper("Error! Message is empty", 400);
 		}
 
-		return this.server.sendAll(new ChatUserMessageWrapper(this.username, message))
+		return this.server.sendAll(new ChatUserMessageWrapper(this.username, message, false))
 				? new ServerResponseWrapper("Ok message to all sent successfully", 200)
 				: new ServerResponseWrapper("Internal server error!", 500);
 	}
@@ -135,8 +140,8 @@ public class ClientHandler implements Runnable {
 
 	private ServerResponseWrapper disconnectUser() {
 		this.server.disconnectUser(this.username);
-
-		return new ServerResponseWrapper("Goodbye {}!" + this.username, 200);
+		System.out.println("User " + this.username + " has disconnected");
+		return new ServerResponseWrapper("Goodbye " + this.username + "!", 200);
 	}
 
 }

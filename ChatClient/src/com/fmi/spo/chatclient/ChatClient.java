@@ -73,18 +73,18 @@ public class ChatClient {
 
 		System.out.println("Connected");
 
-		client.sendMessage("user", null, username);
+		client.sendMessage("user", username, null);
 
 		while (true) {
 			String command = scan.nextLine();
-			String[] commandArgs = command.split(" ", 2);
+			String[] commandArgs = command.split(" ", 3);
 			if (commandArgs.length == 1) {
 				client.sendMessage(commandArgs[0], null, null);
 				if (commandArgs[0].equals("bye")) {
 					break;
 				}
-			} else if (commandArgs.length == 2 && commandArgs[0].equals("send_all")) {
-				client.sendMessage(commandArgs[0], null, commandArgs[1]);
+			} else if (commandArgs.length >= 2 && commandArgs[0].equals("send_all")) {
+				client.sendMessage(commandArgs[0], null, command.split(" ", 2)[1]);
 			} else if (commandArgs.length == 2 && commandArgs[0].equals("user")) {
 				client.sendMessage(commandArgs[0], commandArgs[1], null);
 			} else if (commandArgs.length == 3 && commandArgs[0].equals("send_to")) {
