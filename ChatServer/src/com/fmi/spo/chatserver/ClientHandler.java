@@ -13,7 +13,8 @@ import com.fmi.spo.messages.ClientMessageWrapper;
 import com.fmi.spo.messages.ServerMessageWrapper;
 import com.fmi.spo.messages.ServerResponseWrapper;
 
-public class ClientHandler implements Runnable {
+public class ClientHandler extends Thread {
+	private static int counter = 0;
 
 	private Socket socket;
 	private ChatServer server;
@@ -27,8 +28,10 @@ public class ClientHandler implements Runnable {
 		this.server = server;
 		this.clientOutput = new ObjectOutputStream(this.socket.getOutputStream());
 		this.clientInput = new ObjectInputStream(this.socket.getInputStream());
-		this.username = "unregistered";
+		this.username = "Anonymous" + counter;
+		++counter;
 		this.isRegistered = false;
+
 	}
 
 	public boolean isRegistered() {

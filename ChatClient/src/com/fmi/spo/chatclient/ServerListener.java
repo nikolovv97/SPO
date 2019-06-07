@@ -10,8 +10,8 @@ import com.fmi.spo.messages.ServerResponseWrapper;
 public class ServerListener implements Runnable {
 	private ObjectInputStream inputStream;
 
-	public ServerListener(Socket socket) throws IOException {
-		this.inputStream = new ObjectInputStream(socket.getInputStream());
+	public ServerListener(ObjectInputStream inputStream) throws IOException {
+		this.inputStream = inputStream;
 	}
 
 	@Override

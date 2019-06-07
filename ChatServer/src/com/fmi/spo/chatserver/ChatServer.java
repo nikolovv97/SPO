@@ -12,28 +12,30 @@ import com.fmi.spo.messages.ServerMessageWrapper;
 import com.fmi.spo.messages.ServerResponseWrapper;
 
 public class ChatServer {
-	private static int counter = 0;
-
 	private int serverPort;
 	private ServerSocket serverSocket;
 	private Hashtable<String, ClientHandler> users;
+	private final int MAX_NUM_USERS;
 
-	public ChatServer(int serverPort) throws IOException {
+	public ChatServer(int serverPort, int MAX_NUM_USERS) throws IOException {
 		this.serverPort = serverPort;
 		this.serverSocket = new ServerSocket(this.serverPort);
 		this.users = new Hashtable<>();
+		this.MAX_NUM_USERS = MAX_NUM_USERS;
 	}
 
 	public void start() {
 		System.out.println("Server started");
-
 		while (true) {
 			try {
 				Socket client = this.serverSocket.accept();
-				++counter;
-				ClientHandler newUser = new ClientHandler(client, this);
-				Thread newUserThread = new Thread(newUser);
-				newUserThread.start();
+				if (users.size() >= this.MAX_NUM_USERS) {
+					new Thread(new DisconnectHandler(client)).start();
+				} else {
+					ClientHandler newUser = new ClientHandler(client, this);
+					newUser.start();
+					users.put(newUser.getUsername(), newUser);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -45,13 +47,18 @@ public class ChatServer {
 		serverSocket.close();
 	}
 
-	public boolean registerUser(String username, ClientHandler user) {
+	public boolean registerUser(String username, ClientHandler newUser) {
 		if (this.users.get(username) != null) {
 			return false;
 		}
-		users.put(username, user);
-
+		users.put(username, newUser);
+		users.remove(newUser.getUsername());
 		System.out.println("User " + username + " registered");
+		for (ClientHandler user : this.users.values()) {
+			if (user.isRegistered() && !user.getUsername().equals(username)) {
+				user.writeMessage(new ServerResponseWrapper("User " + username + " has registered", 200));
+			}
+		}
 		return true;
 	}
 
@@ -98,10 +105,18 @@ public class ChatServer {
 
 	public static void main(String[] args) throws IOException {
 		int serverPort = 8080;
+		int MAX_NUM_USERS = 2;
 
-		ChatServer server = new ChatServer(serverPort);
+		for (int i = 0; i < args.length - 1; i++) {
+			if (args[i].equals("-serverPort")) {
+				serverPort = Integer.parseInt(args[i + 1]);
+			} else if (args[i].equals("-num_users")) {
+				MAX_NUM_USERS = Integer.parseInt(args[i + 1]);
+			}
+		}
+
+		ChatServer server = new ChatServer(serverPort, MAX_NUM_USERS);
 
 		server.start();
-
 	}
 }
